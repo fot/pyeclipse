@@ -112,7 +112,7 @@ def convert_eclipse_times(eclipse):
                     if eclipse[n][m].has_key('Entry Timer'):
                         eclipse[n][m].update({'timersec':
                                               npdouble(eclipse[n][m]
-                                                        ['Entry Timer'])})
+                                                       ['Entry Timer'])})
     return eclipse
 
 
