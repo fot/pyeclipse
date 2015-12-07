@@ -1,9 +1,50 @@
 
 from numpy import double as npdouble
 from numpy import array as nparray
+from numpy import array, diff, append, sign, zeros
 from re import split as resplit
 
 from Chandra.Time import DateTime
+
+
+def find_extrema(x,y):
+
+    x = array(x)
+    y = array(y)
+    
+    # Remove repeated points
+    d = diff(y)
+    keep = append(True,d!=0)
+    vals = y[keep]
+    times = x[keep]
+    
+    d = diff(vals)
+    s = sign(d)
+    ds = diff(s)
+    
+    if s[0] == 1:
+        minpts = append(True ,ds == 2)
+        maxpts = append(False,ds == -2)
+    elif s[0] == -1:
+        minpts = append(False,ds == 2)
+        maxpts = append(True,ds == -2)
+    
+    if s[-1] == 1:
+        minpts = append(minpts,False)
+        maxpts = append(maxpts,True)
+    elif s[-1] == -1:
+        minpts = append(minpts,True)
+        maxpts = append(maxpts,False)
+    
+    minbool = zeros(len(y))
+    minbool[keep] = minpts
+    minbool = minbool == 1
+    
+    maxbool = zeros(len(y))
+    maxbool[keep] = maxpts
+    maxbool = maxbool == 1
+    
+    return minbool,maxbool
 
 
 def read_eclipse_file(filename):
