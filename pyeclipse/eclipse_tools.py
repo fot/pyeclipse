@@ -37,16 +37,24 @@ def read_eclipse_file(filename):
     # Note: This entry may be manually created and could be a source of error
     # if read incorrectly.
     words = datalines.pop(0).split()
-    #eclipse = {'epoch':dict(zip(('year','day'), (words[-2][:4],words[-2][5:])))}
-    eclipse = {'epoch': {'year': words[2]}}
-    eclipse['epoch'].update({'dom': words[0]})
-    eclipse['epoch'].update({'month': words[1]})
-    eclipse['epoch'].update({'time': words[3]})
 
-    hosc = DateTime(words[2] + words[1] + words[0] + ' at ' + words[3]).date
-    eclipse['epoch'].update({'doy': hosc[5:8]})
+    if 'Epoch' in words:
+        # Standard ECLIPSE.txt format
+        year, dayofyear = words[-2].split('/')
+        eclipse = {'epoch': {'year': year, 'doy': dayofyear}}
 
-    # Remove spacing lines
+
+    else:
+        # Possibly a manually formatted version
+        eclipse = {'epoch': {'year': words[2]}}
+        eclipse['epoch'].update({'dom': words[0]})
+        eclipse['epoch'].update({'month': words[1]})
+        eclipse['epoch'].update({'time': words[3]})
+
+        hosc = DateTime(words[2] + words[1] + words[0] + ' at ' + words[3]).date
+        eclipse['epoch'].update({'doy': hosc[5:8]})
+
+    # Remove initial spacing lines
     line = datalines.pop(0)
     while len(line.strip()) < 50:
         line = datalines.pop(0)
@@ -70,7 +78,7 @@ def read_eclipse_file(filename):
         line = datalines.pop(0).strip()
 
         # All eclipse entries start wth at least 7 "words"
-        if len(line.split()) == 7:
+        if len(line.split()) >= 7:
 
             # increment the eclipse number and create a placeholder dict
             n = n + 1
