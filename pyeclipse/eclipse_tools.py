@@ -70,7 +70,7 @@ def read_eclipse_file(filename):
 
         return returndict
 
-    with open(filename, 'rb') as fid:
+    with open(filename, 'r', encoding='utf-8') as fid:
         datalines = fid.readlines()
 
     # The first line includes the year and day the file was generated
@@ -146,7 +146,6 @@ def read_eclipse_file(filename):
 
     return eclipse
 
-
 def convert_eclipse_times(eclipse):
     for n in eclipse['eclipse_nums']:
         if n != 'epoch':
@@ -158,25 +157,24 @@ def convert_eclipse_times(eclipse):
                 eclipse[n][m].update({'stopsec':
                                       DateTime(eclipse[n][m]['Stop Time']).secs})
                 if m == 'entrancepenumbra':
-                    if eclipse[n][m].has_key('Entry Timer'):
+                    if 'Entry Timer' in eclipse[n][m].keys():
                         eclipse[n][m].update({'timersec':
                                               npdouble(eclipse[n][m]
                                                        ['Entry Timer'])})
     return eclipse
 
-
 def read_altitude(filename='altitude_prediction.txt'):
-    fin = open(filename, 'rb')
+    fin = open(filename, 'r', encoding='utf-8')
     datalines = fin.readlines()
     fin.close()
-    altitude = nparray([npdouble(line.strip().split()[1]) for line in datalines])
-    times = nparray([DateTime(line.strip().split()[0]).secs for line in datalines])
+    altitude = np.array([npdouble(line.strip().split()[1]) for line in datalines])
+    times = np.array([DateTime(line.strip().split()[0]).secs for line in datalines])
     return (times, altitude)
 
 
 def read_comms(filename, numheaderlines, year):
 
-    fin = open(filename, 'rb')
+    fin = open(filename, 'r', encoding='utf-8')
     datalines = fin.readlines()
     fin.close()
     [datalines.pop(0) for n in range(numheaderlines)]
@@ -191,54 +189,56 @@ def read_comms(filename, numheaderlines, year):
 
     k = -1
     while len(datalines) > 0:
-        if len(datalines[0].strip()) > 20:
-            k = k + 1
+        if datalines[0][0] != '*':
+            if len(datalines[0].strip()) > 20:
+                k = k + 1
 
-            words = datalines.pop(0).strip().split()
-            try:
-                day = words.pop(0)
-            except:
-                import readline  # optional, will allow Up/Down/History in the console
-                import code
-                vars = globals().copy()
-                vars.update(locals())
-                shell = code.InteractiveConsole(vars)
-                shell.interact()
-            start = words.pop(0)
-            bot = words.pop(0)
-            eot = words.pop(0)
-            end = words.pop(0)
-            facility = words.pop(0)
-            user = words.pop(0)
-            endcode2 = words.pop(-1)
-            endcode1 = words.pop(-1)
-            config = words.pop(-1)
-            passno = words.pop(-1)
-            activity = ' '.join(words)
+                words = datalines.pop(0).strip().split()
+                try:
+                    day = words.pop(0)
+                except:
+                    import readline  # optional, will allow Up/Down/History in the console
+                    import code
+                    vars = globals().copy()
+                    vars.update(locals())
+                    shell = code.InteractiveConsole(vars)
+                    shell.interact()
+                start = words.pop(0)
+                bot = words.pop(0)
+                eot = words.pop(0)
+                end = words.pop(0)
+                facility = words.pop(0)
+                user = words.pop(0)
+                endcode2 = words.pop(-1)
+                endcode1 = words.pop(-1)
+                config = words.pop(-1)
+                passno = words.pop(-1)
+                activity = ' '.join(words)
 
-            yearday = year + ':' + day + ':'
-            tstart = DateTime(yearday + start[:2] + ':' + start[2:] +
-                              ':00.000').secs
-            tbot = DateTime(yearday + bot[:2] + ':' + bot[2:] + ':00.000').secs
-            teot = DateTime(yearday + eot[:2] + ':' + eot[2:] + ':00.000').secs
-            tend = DateTime(yearday + end[:2] + ':' + end[2:] + ':00.000').secs
+                yearday = year + ':' + day + ':'
+                tstart = DateTime(yearday + start[:2] + ':' + start[2:] + ':00.000').secs
+                tbot = DateTime(yearday + bot[:2] + ':' + bot[2:] + ':00.000').secs
+                teot = DateTime(yearday + eot[:2] + ':' + eot[2:] + ':00.000').secs
+                tend = DateTime(yearday + end[:2] + ':' + end[2:] + ':00.000').secs
 
-            if npdouble(bot) < npdouble(start):
-                tbot = tbot + 24 * 3600
-                teot = teot + 24 * 3600
-                tend = tend + 24 * 3600
-            elif npdouble(eot) < npdouble(bot):
-                teot = teot + 24 * 3600
-                tend = tend + 24 * 3600
-            elif npdouble(end) < npdouble(eot):
-                tend = tend + 24 * 3600
+                if npdouble(bot) < npdouble(start):
+                    tbot = tbot + 24 * 3600
+                    teot = teot + 24 * 3600
+                    tend = tend + 24 * 3600
+                elif npdouble(eot) < npdouble(bot):
+                    teot = teot + 24 * 3600
+                    tend = tend + 24 * 3600
+                elif npdouble(end) < npdouble(eot):
+                    tend = tend + 24 * 3600
 
-            passinfo = (day, start, bot, eot, end, facility, user, endcode2,
-                        endcode1, config, passno, activity, tstart, tbot, teot,
-                        tend)
+                passinfo = (day, start, bot, eot, end, facility, user, endcode2,
+                            endcode1, config, passno, activity, tstart, tbot, teot,
+                            tend)
 
-            commdata.update(dict({k: dict(zip(fieldnames, passinfo))}))
+                commdata.update(dict({k: dict(zip(fieldnames, passinfo))}))
 
         junk = datalines.pop(0)
 
     return commdata
+
+
