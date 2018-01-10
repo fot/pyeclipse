@@ -3,6 +3,7 @@ from numpy import double as npdouble
 from numpy import array as nparray
 from numpy import array, diff, append, sign, zeros
 from re import split as resplit
+from re import findall
 
 from Chandra.Time import DateTime
 
@@ -77,16 +78,17 @@ def read_eclipse_file(filename):
     #
     # Note: This entry may be manually created and could be a source of error
     # if read incorrectly.
-    words = datalines.pop(0).split()
+    line = datalines.pop(0)
 
-    if 'Epoch' in words:
+    if 'Epoch' in line:
         # Standard ECLIPSE.txt format
-        year, dayofyear = words[-2].split('/')
+        year, dayofyear = findall('([0-9]+)', line)
         eclipse = {'epoch': {'year': year, 'doy': dayofyear}}
 
 
     else:
         # Possibly a manually formatted version
+        words = line.split()
         eclipse = {'epoch': {'year': words[2]}}
         eclipse['epoch'].update({'dom': words[0]})
         eclipse['epoch'].update({'month': words[1]})
